@@ -106,8 +106,9 @@ func TestBetaPromptCachingMessageNewWithOptionalParams(t *testing.T) {
 			}),
 			Description: anthropic.F("Get the current weather in a given location"),
 		}}),
-		TopK: anthropic.F(int64(5)),
-		TopP: anthropic.F(0.700000),
+		TopK:  anthropic.F(int64(5)),
+		TopP:  anthropic.F(0.700000),
+		Betas: anthropic.F([]anthropic.AnthropicBeta{anthropic.AnthropicBetaMessageBatches2024_09_24, anthropic.AnthropicBetaMessageBatches2024_09_24, anthropic.AnthropicBetaMessageBatches2024_09_24}),
 	})
 	if err != nil {
 		var apierr *anthropic.Error
