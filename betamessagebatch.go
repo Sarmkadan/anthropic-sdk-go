@@ -849,7 +849,7 @@ type BetaMessageBatchListParams struct {
 	BeforeID param.Field[string] `query:"before_id"`
 	// Number of items to return per page.
 	//
-	// Defaults to `20`. Ranges from `1` to `100`.
+	// Defaults to `20`. Ranges from `1` to `1000`.
 	Limit param.Field[int64] `query:"limit"`
 	// Optional header to specify the beta version(s) you want to use.
 	Betas param.Field[[]AnthropicBeta] `header:"anthropic-beta"`
