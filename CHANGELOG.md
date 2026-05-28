@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.46.1 (2026-05-28)
+
+Full Changelog: [v1.46.0...v1.46.1](https://github.com/anthropics/anthropic-sdk-go/compare/v1.46.0...v1.46.1)
+
+### Bug Fixes
+
+* **streaming:** carry encrypted_content through beta compaction accumulator ([#875](https://github.com/anthropics/anthropic-sdk-go/issues/875)) ([13fa611](https://github.com/anthropics/anthropic-sdk-go/commit/13fa61165159653ee1f3cc63a4df2d1c5dab7970))
+* **streaming:** carry stop_details and usage fields through beta message_delta ([#879](https://github.com/anthropics/anthropic-sdk-go/issues/879)) ([d432c9f](https://github.com/anthropics/anthropic-sdk-go/commit/d432c9fb538442ccce72bfbee4f4d69d18d1acf2))
+* **streaming:** carry stop_details and usage fields through message_delta ([#877](https://github.com/anthropics/anthropic-sdk-go/issues/877)) ([e2fcc35](https://github.com/anthropics/anthropic-sdk-go/commit/e2fcc3583f9a9fa37ce5b1a1fc5f55391c2e9199))
+
 ## 1.46.0 (2026-05-28)
 
 Full Changelog: [v1.45.0...v1.46.0](https://github.com/anthropics/anthropic-sdk-go/compare/v1.45.0...v1.46.0)
