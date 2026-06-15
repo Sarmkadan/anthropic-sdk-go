@@ -6,6 +6,8 @@
 
 <!-- x-release-please-end -->
 
+![Build](https://github.com/sarmkadan/anthropic-sdk-go/actions/workflows/build.yml/badge.svg)
+
 The Claude SDK for Go provides access to the [Claude API](https://docs.anthropic.com/en/api/) from Go applications.
 
 ## Documentation
