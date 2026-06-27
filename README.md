@@ -67,6 +67,14 @@ func main() {
 }
 ```
 
+## Examples
+
+The SDK includes comprehensive usage examples in the [`examples/`](examples/) directory:
+
+- **[BasicUsage.go](examples/BasicUsage.go)** – Minimal setup and first call
+- **[AdvancedUsage.go](examples/AdvancedUsage.go)** – Configuration, custom options, error handling, and tool use
+- **[IntegrationExample.go](examples/IntegrationExample.go)** – Application integration patterns with dependency injection and context management
+
 ## Requirements
 
 Go 1.22+
