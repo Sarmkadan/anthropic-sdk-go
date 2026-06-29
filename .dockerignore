@@ -1,0 +1,40 @@
+# Build artifacts
+bin/
+obj/
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Go workspace file
+go.work
+
+# Dependency directories
+pkg/mod/
+.pkg/
+
+# Version control
+.git/
+.gitignore
+
+# IDE specific
+.idea/
+.vscode/
+.vs/
+*.swp
+*.swo
+
+# Build output
+anthropic-sdk-go
+
+# Logs and cache
+*.log
+.cache/
+.DS_Store
+
+# Test output
+test-output/
+coverage.txt
+
+# Docker
+docker-compose.override.yml

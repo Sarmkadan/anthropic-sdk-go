@@ -1,0 +1,65 @@
+version: '3.8'
+
+services:
+  # Development environment for building and testing the SDK
+  sdk:
+    build: .
+    image: sarmkadan/anthropic-sdk-go:latest
+    container_name: anthropic-sdk-go
+    environment:
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - GOPATH=/go
+    volumes:
+      - .:/app
+      - go-mod:/go/pkg/mod
+      - go-build:/root/.cache/go-build
+    working_dir: /app
+    tty: true
+    stdin_open: true
+    networks:
+      - sdk-network
+    healthcheck:
+      test: ["CMD", "go", "version"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
+
+  # Example applications demonstrating SDK usage
+  basic-example:
+    build:
+      context: .
+      dockerfile: Dockerfile.example
+    image: sarmkadan/anthropic-sdk-go-examples:latest
+    container_name: anthropic-sdk-go-examples
+    environment:
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+    depends_on:
+      sdk:
+        condition: service_healthy
+    volumes:
+      - ./examples:/examples
+    networks:
+      - sdk-network
+
+  # Test service
+  test:
+    build: .
+    command: go test -v ./...
+    environment:
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+    volumes:
+      - .:/app
+      - go-mod:/go/pkg/mod
+      - go-build:/root/.cache/go-build
+    working_dir: /app
+    networks:
+      - sdk-network
+
+volumes:
+  go-mod:
+  go-build:
+
+networks:
+  sdk-network:
+    driver: bridge
