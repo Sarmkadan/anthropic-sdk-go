@@ -83,6 +83,75 @@ Go 1.22+
 
 See [CONTRIBUTING.md](./CONTRIBUTING.md).
 
+## Docker Support
+
+
+The SDK can be built and run using Docker for development and deployment.
+
+
+
+### Building the SDK with Docker
+
+
+```bash
+# Build the SDK binary in a Docker container
+docker build -t sarmkadan/anthropic-sdk-go .
+```
+
+
+### Running the SDK with Docker
+
+
+```bash
+# Run the SDK container with your Anthropic API key
+docker run --rm -it   -e ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}   sarmkadan/anthropic-sdk-go
+```
+
+### Using docker-compose for Development
+
+
+```bash
+# Start development environment with build cache volumes
+docker-compose up -d
+
+
+# Build and run
+docker-compose build
+docker-compose up
+
+# Run tests
+docker-compose up test
+
+# Run example applications
+docker-compose up basic-example
+```
+
+### Development with Docker
+
+
+The project includes a docker-compose.yml file for development with:
+- Build cache volumes for Go modules and build artifacts
+- Environment variable support for ANTHROPIC_API_KEY
+- Health checks for the container
+- Example service demonstrating SDK usage
+
+
+### Production Deployment
+
+
+The Docker setup uses a multi-stage build to create a minimal production image:
+- Builder stage compiles the SDK binary
+- Final stage uses Alpine Linux for minimal footprint
+- Only the compiled binary and runtime dependencies are included
+- No build tools or source code in the final image
+
+
+### Dockerfile Features
+- Multi-stage build for optimized image size
+- Alpine-based for minimal footprint
+- Builds the SDK binary in the builder stage
+- Final image contains only runtime dependencies
+
 ## License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.

@@ -3,7 +3,9 @@ version: '3.8'
 services:
   # Development environment for building and testing the SDK
   sdk:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
     image: sarmkadan/anthropic-sdk-go:latest
     container_name: anthropic-sdk-go
     environment:
@@ -44,7 +46,9 @@ services:
 
   # Test service
   test:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
     command: go test -v ./...
     environment:
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
