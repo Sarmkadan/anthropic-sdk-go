@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/anthropics/anthropic-sdk-go/config"
+	"github.com/anthropics/anthropic-sdk-go/internal/anthropicerrors"
 	"github.com/anthropics/anthropic-sdk-go/internal/auth"
 	"github.com/anthropics/anthropic-sdk-go/internal/requestconfig"
 	"github.com/anthropics/anthropic-sdk-go/option"
@@ -255,6 +256,9 @@ func NewClient(opts ...option.RequestOption) (r Client) {
 // For even greater flexibility, see [option.WithResponseInto] and
 // [option.WithResponseBodyInto].
 func (r *Client) Execute(ctx context.Context, method string, path string, params any, res any, opts ...option.RequestOption) error {
+	if ctx == nil {
+		return anthropicerrors.NewValidationException("context cannot be nil", nil)
+	}
 	opts = slices.Concat(r.Options, opts)
 	return requestconfig.ExecuteNewRequest(ctx, method, path, params, res, opts...)
 }
@@ -297,7 +301,7 @@ func (r *Client) Delete(ctx context.Context, path string, params any, res any, o
 func CalculateNonStreamingTimeout(maxTokens int, model Model, opts []option.RequestOption) (time.Duration, error) {
 	preCfg, err := requestconfig.PreRequestOptions(opts...)
 	if err != nil {
-		return 0, fmt.Errorf("error applying request options: %w", err)
+		return 0, anthropicerrors.NewConfigurationException("error applying request options", err)
 	}
 	// if the user has set a specific request timeout, use that
 	if preCfg.RequestTimeout != 0 {
@@ -313,7 +317,7 @@ func CalculateNonStreamingTimeout(maxTokens int, model Model, opts []option.Requ
 	// or if the expected time exceeds default time, require streaming
 	maxNonStreamingTokens, hasLimit := constant.ModelNonStreamingTokens[string(model)]
 	if expectedTime > defaultTime || (hasLimit && maxTokens > maxNonStreamingTokens) {
-		return 0, fmt.Errorf("streaming is required for operations that may take longer than 10 minutes")
+		return 0, anthropicerrors.NewValidationException("streaming is required for operations that may take longer than 10 minutes", nil)
 	}
 
 	return defaultTime, nil
