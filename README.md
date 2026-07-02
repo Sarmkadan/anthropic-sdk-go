@@ -152,6 +152,15 @@ The Docker setup uses a multi-stage build to create a minimal production image:
 - Builds the SDK binary in the builder stage
 - Final image contains only runtime dependencies
 
+## Performance
+
+The SDK includes comprehensive performance benchmarks to ensure optimal performance and identify regressions.
+
+- **Benchmarks**: Located in the [`benchmarks/`](benchmarks/) directory
+- **Running**: See [benchmarks/README.md](benchmarks/README.md) for detailed instructions
+- **Categories**: Client creation, message operations, model operations, memory diagnostics
+
+
 ## License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
