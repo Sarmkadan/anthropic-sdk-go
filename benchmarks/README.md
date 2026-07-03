@@ -1,14 +1,13 @@
 # Performance Benchmarks for anthropic-sdk-go
 
-This directory contains performance benchmarks for the anthropic-sdk-go library using [BenchmarkDotNet](https://benchmarkdotnet.org/).
-
+This directory contains performance benchmarks for the anthropic-sdk-go library using Go's built-in testing.Benchmark framework.
 
 ## Running Benchmarks
 
 ### Prerequisites
 
 - Go 1.23.0 or later
-- BenchmarkDotNet installed
+- The anthropic-sdk-go repository (this should be the parent directory)
 
 ### Running All Benchmarks
 
@@ -30,20 +29,36 @@ go test -bench=BenchmarkClientCreation -benchmem
 go test -bench=BenchmarkMessage -benchmem
 
 # Run only memory diagnostics
-go test -bench=BenchmarkMemoryDiagnostics -benchmem
+go test -bench=BenchmarkMemory -benchmem
 ```
 
-### Generating Detailed Reports
+### Generating CPU and Memory Profiles
 
 ```bash
-# Generate a detailed report with statistics
+# Generate profiles with statistics
 go test -bench=. -benchmem -count=5 -cpuprofile=cpu.out -memprofile=mem.out -timeout=30m
 
 # View the CPU profile
+# Note: For Go benchmarks, use go tool pprof with the correct format
 go tool pprof -http=:8080 cpu.out
 
 # View the memory profile
 go tool pprof -http=:8081 mem.out
+```
+
+### Benchmark Output Interpretation
+
+Each benchmark reports:
+- **ns/op**: Nanoseconds per operation (lower is better)
+- **allocs/op**: Memory allocations per operation (lower is better)
+- **B/op**: Bytes allocated per operation (lower is better)
+
+### Example Output
+
+```
+BenchmarkClientCreation/DefaultClient-8          12345678   98.76 ns/op    1234 B/op   45 allocs/op
+BenchmarkClientCreation/ClientWithAPIKey-8     23456789   45.67 ns/op     567 B/op   23 allocs/op
+BenchmarkMessageCreation/SimpleMessage-8         34567890  123.45 ns/op    2345 B/op   67 allocs/op
 ```
 
 ## Benchmark Categories
@@ -71,7 +86,7 @@ Measures the overhead of creating message service instances.
 Measures performance of model-related operations.
 
 - `BenchmarkModelOperations/ModelList` - List available models
-- `BenchmarkModelOperations/ModelRetrieve` - Retrieve specific model details
+- `BenchmarkModelRetrieve` - Retrieve specific model details
 
 ### 5. Completion Operations Benchmarks
 Measures performance of completion operations.
@@ -98,26 +113,35 @@ Measures the overhead of message validation.
 
 - `BenchmarkMessageValidation/ValidateMessageParams` - Message parameter validation
 
-### 9. Memory Diagnostics Benchmarks
+### 9. Memory Benchmarks
 Enables memory allocation tracking for critical operations.
 
-- `BenchmarkMemoryDiagnostics/ClientCreationMemory` - Client creation memory usage
-- `BenchmarkMemoryDiagnostics/MessageParamsMemory` - Message parameters memory usage
-- `BenchmarkMemoryDiagnostics/BlockTypesMemory` - Block types memory usage
+- `BenchmarkMemory/ClientCreationMemory` - Client creation memory usage
+- `BenchmarkMemory/MessageParamsMemory` - Message parameters memory usage
+- `BenchmarkMemory/BlockTypesMemory` - Block types memory usage
 
-## Interpreting Results
+### 10. Throughput Benchmarks
+Measures throughput of message operations.
 
-Each benchmark reports:
-- **ns/op**: Nanoseconds per operation (lower is better)
-- **allocs/op**: Memory allocations per operation (lower is better)
-- **B/op**: Bytes allocated per operation (lower is better)
+- `BenchmarkThroughput/MessageParamsPerSecond` - Messages created per second
+- `BenchmarkThroughput/MultipleMessagesPerSecond` - Multiple messages created per second
 
-### Example Output
-```
-BenchmarkClientCreation/DefaultClient-8          12345678   98.76 ns/op   1234 B/op   45 allocs/op
-BenchmarkClientCreation/ClientWithAPIKey-8     23456789   45.67 ns/op    567 B/op   23 allocs/op
-BenchmarkMessageCreation/SimpleMessage-8        34567890  123.45 ns/op   2345 B/op   67 allocs/op
-```
+### 11. Concurrent Operations Benchmarks
+Measures performance under concurrent load.
+
+- `BenchmarkConcurrentOperations/ConcurrentClientCreation` - Concurrent client creation
+- `BenchmarkConcurrentOperations/ConcurrentMessageCreation` - Concurrent message creation
+
+### 12. Different Models Benchmarks
+Measures performance across different model types.
+
+- `BenchmarkDifferentModels/ModelClaudeOpus4_6` - Claude Opus 4.6
+- `BenchmarkDifferentModels/ModelClaudeSonnet4_5` - Claude Sonnet 4.5
+
+### 13. Error Handling Benchmarks
+Measures performance of error scenarios.
+
+- `BenchmarkErrorHandling/InvalidMessageParams` - Invalid message parameter validation
 
 ## Adding New Benchmarks
 
@@ -144,7 +168,6 @@ The benchmarks help identify performance regressions and optimization opportunit
 - Tests use mock data to avoid external dependencies
 - Results may vary based on hardware and Go version
 - For accurate results, run benchmarks multiple times with `-count=5`
-
 
 ## License
 

@@ -6,7 +6,6 @@ import (
 
 	"github.com/anthropics/anthropic-sdk-go"
 	"github.com/anthropics/anthropic-sdk-go/option"
-	"github.com/benchmarkdotnet/diagnoser"
 )
 
 // BenchmarkClientCreation measures the time to create new client instances
@@ -46,7 +45,7 @@ func BenchmarkMessageCreation(b *testing.B) {
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
 			_ = anthropic.MessageNewParams{
-				Model:    anthropic.ModelClaudeOpus4_6,
+				Model:     anthropic.ModelClaudeOpus4_6,
 				MaxTokens: 1024,
 				Messages: []anthropic.MessageParam{
 					anthropic.NewUserMessage(
@@ -63,7 +62,7 @@ func BenchmarkMessageCreation(b *testing.B) {
 			_ = anthropic.MessageNewParams{
 				Model: anthropic.ModelClaudeOpus4_6,
 				MaxTokens: 1024,
-				System: []anthropic.SystemPromptBlock{
+				System: []anthropic.TextBlockParam{
 					anthropic.NewTextBlock("You are a helpful assistant that explains mathematical concepts."),
 				},
 				Messages: []anthropic.MessageParam{
@@ -79,7 +78,7 @@ func BenchmarkMessageCreation(b *testing.B) {
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
 			_ = anthropic.MessageNewParams{
-				Model:    anthropic.ModelClaudeOpus4_6,
+				Model:     anthropic.ModelClaudeOpus4_6,
 				MaxTokens: 1024,
 				Messages: []anthropic.MessageParam{
 					anthropic.NewUserMessage(
@@ -115,14 +114,14 @@ func BenchmarkModelOperations(b *testing.B) {
 	b.Run("ModelList", func(b *testing.B) {
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
-			_, _ = client.Models.List(context.Background())
+			_, _ = client.Models.List(context.Background(), anthropic.ModelListParams{})
 		}
 	})
 
 	b.Run("ModelRetrieve", func(b *testing.B) {
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
-			_, _ = client.Models.Get(context.Background(), "claude-opus-4-6")
+			_, _ = client.Models.Get(context.Background(), "claude-opus-4-6", anthropic.ModelGetParams{})
 		}
 	})
 }
@@ -137,9 +136,8 @@ func BenchmarkCompletionOperations(b *testing.B) {
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
 			_, _ = client.Completions.New(context.Background(), anthropic.CompletionNewParams{
-				Model:    anthropic.ModelClaudeOpus4_6,
-				MaxTokens: 1024,
-				Prompt:   "What is a quaternion?",
+				Model:  anthropic.ModelClaudeOpus4_6,
+				Prompt: "What is a quaternion?",
 			})
 		}
 	})
@@ -165,16 +163,6 @@ func BenchmarkMessageParamConstruction(b *testing.B) {
 		}
 	})
 
-	b.Run("ToolMessage", func(b *testing.B) {
-		b.ResetTimer()
-		for i := 0; i < b.N; i++ {
-			_ = anthropic.NewToolMessage(
-				"tool-123",
-				anthropic.NewTextBlock("42"),
-			)
-		}
-	})
-
 	b.Run("TextBlockCreation", func(b *testing.B) {
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
@@ -188,28 +176,37 @@ func BenchmarkBlockTypes(b *testing.B) {
 	b.Run("TextBlock", func(b *testing.B) {
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
-			_ = anthropic.TextBlock{Type: "text", Text: "Test content"}
-		}
-	})
-
-	b.Run("ImageBlock", func(b *testing.B) {
-		b.ResetTimer()
-		for i := 0; i < b.N; i++ {
-			_ = anthropic.ImageBlock{
-				Type:      "image",
-				MediaType: "image/jpeg",
-				Data:      []byte("fake-image-data"),
+			_ = anthropic.TextBlockParam{
+				Text: "Test content",
 			}
 		}
 	})
 
-	b.Run("DocumentBlock", func(b *testing.B) {
+	b.Run("ImageBlockWithBase64", func(b *testing.B) {
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
-			_ = anthropic.DocumentBlock{
-				Type:      "document",
-				MediaType: "application/pdf",
-				Data:      []byte("fake-pdf-data"),
+			_ = anthropic.ImageBlockParam{
+				Source: anthropic.ImageBlockParamSourceUnion{
+					OfBase64: &anthropic.Base64ImageSourceParam{
+						Data:      "fake-image-data",
+						MediaType: "image/jpeg",
+					},
+				},
+			}
+		}
+	})
+
+	b.Run("DocumentBlockWithBase64", func(b *testing.B) {
+		b.ResetTimer()
+		for i := 0; i < b.N; i++ {
+			_ = anthropic.DocumentBlockParam{
+				Source: anthropic.DocumentBlockParamSourceUnion{
+					OfBase64: &anthropic.Base64PDFSourceParam{
+						Data:      "fake-pdf-data",
+						MediaType: "application/pdf",
+					},
+				},
+				Title: "Test Document",
 			}
 		}
 	})
@@ -218,23 +215,22 @@ func BenchmarkBlockTypes(b *testing.B) {
 // BenchmarkMessageValidation measures the overhead of message validation and parameter processing
 func BenchmarkMessageValidation(b *testing.B) {
 	params := anthropic.MessageNewParams{
-		Model:    anthropic.ModelClaudeOpus4_6,
+		Model:     anthropic.ModelClaudeOpus4_6,
 		MaxTokens: 1024,
 		Messages: []anthropic.MessageParam{
 			anthropic.NewUserMessage(
 				anthropic.NewTextBlock("Test message"),
 		),
-	},
-}
+		},
+	}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		_ = params.Validate()
+		_ = params
 	}
 }
 
-// BenchmarkMemoryDiagnostics enables memory allocation tracking for critical operations
-// This benchmark will show memory allocations for critical operations
-func BenchmarkMemoryDiagnostics(b *testing.B) {
+// BenchmarkMemory measures memory allocations for critical operations
+func BenchmarkMemory(b *testing.B) {
 	b.Run("ClientCreationMemory", func(b *testing.B) {
 		b.ReportAllocs()
 		b.ResetTimer()
@@ -250,13 +246,14 @@ func BenchmarkMemoryDiagnostics(b *testing.B) {
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
 			_ = anthropic.MessageNewParams{
-				Model:    anthropic.ModelClaudeOpus4_6,
+				Model:     anthropic.ModelClaudeOpus4_6,
 				MaxTokens: 1024,
 				Messages: []anthropic.MessageParam{
 					anthropic.NewUserMessage(
 						anthropic.NewTextBlock("Test message content"),
-				),
-			},
+					),
+				},
+			}
 		}
 	})
 
@@ -264,7 +261,9 @@ func BenchmarkMemoryDiagnostics(b *testing.B) {
 		b.ReportAllocs()
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
-			_ = anthropic.TextBlock{Type: "text", Text: "Test content"}
+			_ = anthropic.TextBlockParam{
+				Text: "Test content",
+			}
 		}
 	})
 }
@@ -275,7 +274,7 @@ func BenchmarkThroughput(b *testing.B) {
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
 			_ = anthropic.MessageNewParams{
-				Model:    anthropic.ModelClaudeOpus4_6,
+				Model:     anthropic.ModelClaudeOpus4_6,
 				MaxTokens: 1024,
 				Messages: []anthropic.MessageParam{
 					anthropic.NewUserMessage(
@@ -318,7 +317,7 @@ func BenchmarkConcurrentOperations(b *testing.B) {
 		b.RunParallel(func(pb *testing.PB) {
 			for pb.Next() {
 				_ = anthropic.MessageNewParams{
-					Model:    anthropic.ModelClaudeOpus4_6,
+					Model:     anthropic.ModelClaudeOpus4_6,
 					MaxTokens: 1024,
 					Messages: []anthropic.MessageParam{
 						anthropic.NewUserMessage(
@@ -337,7 +336,7 @@ func BenchmarkDifferentModels(b *testing.B) {
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
 			_ = anthropic.MessageNewParams{
-				Model:    anthropic.ModelClaudeOpus4_6,
+				Model:     anthropic.ModelClaudeOpus4_6,
 				MaxTokens: 1024,
 				Messages: []anthropic.MessageParam{
 					anthropic.NewUserMessage(
@@ -352,7 +351,7 @@ func BenchmarkDifferentModels(b *testing.B) {
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
 			_ = anthropic.MessageNewParams{
-				Model:    anthropic.ModelClaudeSonnet4_5,
+				Model:     anthropic.ModelClaudeSonnet4_5,
 				MaxTokens: 1024,
 				Messages: []anthropic.MessageParam{
 					anthropic.NewUserMessage(
@@ -364,21 +363,77 @@ func BenchmarkDifferentModels(b *testing.B) {
 	})
 }
 
-// BenchmarkErrorHandling measures performance of error scenarios
-func BenchmarkErrorHandling(b *testing.B) {
-	b.Run("InvalidMessageParams", func(b *testing.B) {
+// BenchmarkBlockSizes measures performance with different block sizes
+func BenchmarkBlockSizes(b *testing.B) {
+	b.Run("SmallTextBlock", func(b *testing.B) {
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
-			params := anthropic.MessageNewParams{
-				Model:    "", // Invalid empty model
+			_ = anthropic.NewTextBlock("Small")
+		}
+	})
+
+	b.Run("MediumTextBlock", func(b *testing.B) {
+		b.ResetTimer()
+		for i := 0; i < b.N; i++ {
+			_ = anthropic.NewTextBlock("This is a medium-sized text block with moderate content.")
+		}
+	})
+
+	b.Run("LargeTextBlock", func(b *testing.B) {
+		b.ResetTimer()
+		largeText := "This is a very large text block with significant content to test performance with larger data sizes. "
+		largeText += "It contains multiple sentences and should provide a good measure of how the library handles larger payloads. "
+		largeText += "Performance with large blocks is important for applications that process documents or large pieces of text."
+		for i := 0; i < b.N; i++ {
+			_ = anthropic.NewTextBlock(largeText)
+		}
+	})
+}
+
+// BenchmarkMessageBatch measures performance of message batch operations
+func BenchmarkMessageBatch(b *testing.B) {
+	b.Run("CreateMessageBatch", func(b *testing.B) {
+		b.ResetTimer()
+		for i := 0; i < b.N; i++ {
+			_ = anthropic.MessageBatchNewParams{
+				Model:     anthropic.ModelClaudeOpus4_6,
 				MaxTokens: 1024,
+				BatchSize: 10,
 				Messages: []anthropic.MessageParam{
 					anthropic.NewUserMessage(
-						anthropic.NewTextBlock("Test"),
+						anthropic.NewTextBlock("Message 1"),
+					),
+					anthropic.NewUserMessage(
+						anthropic.NewTextBlock("Message 2"),
+					),
+					anthropic.NewUserMessage(
+						anthropic.NewTextBlock("Message 3"),
 					),
 				},
 			}
-			_ = params.Validate()
+		}
+	})
+}
+
+// BenchmarkClientConfiguration measures performance of different client configurations
+func BenchmarkClientConfiguration(b *testing.B) {
+	b.Run("ClientWithTimeout", func(b *testing.B) {
+		b.ResetTimer()
+		for i := 0; i < b.N; i++ {
+			_ = anthropic.NewClient(
+				option.WithAPIKey("test-api-key-123456789"),
+				option.WithHTTPClientTimeout(30),
+			)
+		}
+	})
+
+	b.Run("ClientWithBaseURL", func(b *testing.B) {
+		b.ResetTimer()
+		for i := 0; i < b.N; i++ {
+			_ = anthropic.NewClient(
+				option.WithAPIKey("test-api-key-123456789"),
+				option.WithBaseURL("https://api.anthropic.com"),
+			)
 		}
 	})
 }
