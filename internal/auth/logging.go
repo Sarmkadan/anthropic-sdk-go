@@ -1,8 +1,9 @@
 package auth
 
 import (
-	"log"
 	"sync"
+
+	"github.com/anthropics/anthropic-sdk-go/internal/logging"
 )
 
 // warnOnce emits a log line for an error category exactly once per process.
@@ -11,8 +12,9 @@ import (
 // the credentials cache would otherwise cause a fresh exchange on every
 // request with no visible cause).
 var (
-	warnOnceMu  sync.Mutex
+	warnOnceMu sync.Mutex
 	warnOnceSet = map[string]bool{}
+	logger      = logging.New("auth")
 )
 
 func warnOnce(key, format string, args ...any) {
@@ -23,7 +25,7 @@ func warnOnce(key, format string, args ...any) {
 	if already {
 		return
 	}
-	log.Printf("anthropic-sdk-go/auth: "+format, args...)
+	logger.LogWarning(format, args...)
 }
 
 // ResetWarnOnceForTest clears the warnOnce dedupe set. Exported for test
