@@ -3,3 +3,6 @@
 codegen.log
 Brewfile.lock.json
 .idea/
+
+# aider internal state - never commit
+.aider*
