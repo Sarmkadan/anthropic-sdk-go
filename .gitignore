@@ -6,3 +6,9 @@ Brewfile.lock.json
 
 # aider internal state - never commit
 .aider*
+bin/
+obj/
+*.user
+.vs/
+TestResults/
+BenchmarkDotNet.Artifacts/
